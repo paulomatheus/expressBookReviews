@@ -70,21 +70,18 @@ public_users.get('/author/:author', async function (req, res) {
 });
 
 // Get all books based on title
-public_users.get('/title/:title', function (req, res) {
+public_users.get('/title/:title', async function (req, res) {
     const title = req.params.title;
-    const bookKeys = Object.keys(books);
-    let booksByTitle = {};
     
-    for (let key of bookKeys) {
-        if (books[key].title === title) {
-            booksByTitle[key] = books[key];
+    try {
+        const response = await axios.get(`${BASE_URL}/title/${title}`);
+        res.send(JSON.stringify(response.data, null, 4));
+    } catch (error) {
+        if (error.response && error.response.status === 404) {
+            res.status(404).json({message: "No books found with this title"});
+        } else {
+            res.status(500).json({message: "Error fetching books", error: error.message});
         }
-    }
-    
-    if (Object.keys(booksByTitle).length > 0) {
-        res.send(JSON.stringify(booksByTitle, null, 4));
-    } else {
-        return res.status(404).json({message: "No books found with this title"});
     }
 });
 
